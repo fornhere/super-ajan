@@ -60,6 +60,104 @@ icerir "Kart yok mesajı" "Kart yok"
 kod 1 "olmayan rol" ./baslat.sh isler/004-d uydurma-rol
 icerir "Rol yok mesajı" "Rol yok"
 
+echo "ayarlar ve model seçimi"
+PY=python3; "$PY" -c "" 2>/dev/null || PY=python
+"$PY" - "$T" > "$T/model-guven.json" <<'JS'
+import json,os,sys
+print(json.dumps({"projects":{os.path.realpath(sys.argv[1]).replace(os.sep,"/"):{"hasTrustDialogAccepted":True}}}))
+JS
+# Kuru mod yanlışlıkla claude çağırırsa gerçek oturum açılmasın, test kalsın.
+mkdir -p "$T/model-bin"
+cat > "$T/model-bin/claude" <<'SAHTE'
+#!/bin/bash
+echo "HATA: kuru mod claude çağırdı" >&2
+exit 99
+SAHTE
+chmod +x "$T/model-bin/claude"
+kuru(){ env PATH="$T/model-bin:$PATH" SUPER_AJAN_CLAUDE_JSON="$T/model-guven.json" SUPER_AJAN_KURU=1 ./baslat.sh "$@"; }
+cp isler/004-d/kart.md "$T/model-kart-once"
+cp .gecmis "$T/model-gecmis-once"
+for rol in isci reviewer dogrulayici birlestirici; do
+  ef=high; [ "$rol" != dogrulayici ] || ef=medium
+  kod 0 "$rol varsayılan kuru başlatma" kuru isler/004-d "$rol"
+  icerir "$rol varsayılan model ve efor" "--model sonnet --effort $ef"
+  icerir "$rol komut başlangıcı" "claude --bg"
+  if [ "$(printf '%s\n' "$SON" | wc -l | tr -d ' ')" = 1 ]; then gecti "$rol tek satır komut"; else kaldi "$rol birden fazla satır" "$SON"; fi
+done
+kod 0 "kuru mod kartı değiştirmez" cmp isler/004-d/kart.md "$T/model-kart-once"
+kod 0 "kuru mod geçmişi değiştirmez" cmp .gecmis "$T/model-gecmis-once"
+cp ayarlar.sh "$T/model-ayarlar-once"
+cat > ayarlar.sh <<'AYAR'
+MODEL_ISCI=haiku; EFOR_ISCI=low
+MODEL_INCELEMECI=opus; EFOR_INCELEMECI=medium
+MODEL_DOGRULAYICI=haiku; EFOR_DOGRULAYICI=high
+MODEL_BIRLESTIRICI=opus; EFOR_BIRLESTIRICI=low
+AYAR
+for rol in isci reviewer dogrulayici birlestirici; do
+  case "$rol" in
+    isci) model=haiku; ef=low;; reviewer) model=opus; ef=medium;;
+    dogrulayici) model=haiku; ef=high;; birlestirici) model=opus; ef=low;;
+  esac
+  kod 0 "$rol değişen ayarla başlatma" kuru isler/004-d "$rol"
+  icerir "$rol ayar dosyasını kullanır" "--model $model --effort $ef"
+done
+# Kartın iki alanı da rol ayarını yalnız işçi için geçersiz kılar.
+printf '\nModel: opus\nEfor: medium\n' >> isler/004-d/kart.md
+kod 0 "kart işçi ayarını geçersiz kılar" kuru isler/004-d isci
+icerir "karttan opus ve medium" "--model opus --effort medium"
+cp "$T/model-ayarlar-once" ayarlar.sh
+sed "s/^PROFIL=.*/PROFIL=guclu/" "$T/model-ayarlar-once" > ayarlar.sh
+kod 0 "guclu profil: işçi" kuru isler/004-d isci
+icerir "guclu profil işçiye opus verir" "--model opus"
+kod 0 "guclu profil: doğrulayıcı" kuru isler/004-d dogrulayici
+icerir "guclu profil doğrulayıcıya sonnet high verir" "--model sonnet --effort high"
+sed "s/^PROFIL=.*/PROFIL=ekonomik/" "$T/model-ayarlar-once" > ayarlar.sh
+kod 0 "ekonomik profil: doğrulayıcı" kuru isler/004-d dogrulayici
+icerir "ekonomik profil doğrulayıcıya haiku verir" "--model haiku"
+cp "$T/model-ayarlar-once" ayarlar.sh
+for rol in reviewer dogrulayici birlestirici; do
+  ef=high; [ "$rol" != dogrulayici ] || ef=medium
+  kod 0 "$rol kart modelini yok sayar" kuru isler/004-d "$rol"
+  icerir "$rol kendi model ve eforunu korur" "--model sonnet --effort $ef"
+done
+cp "$T/model-kart-once" isler/004-d/kart.md
+printf '\nModel: opus\n' >> isler/004-d/kart.md
+kod 0 "kartta yalnız model" kuru isler/004-d isci
+icerir "eksik kart eforu rol ayarından" "--model opus --effort high"
+cp "$T/model-kart-once" isler/004-d/kart.md
+printf '\nEfor: low\n' >> isler/004-d/kart.md
+kod 0 "kartta yalnız efor" kuru isler/004-d isci
+icerir "eksik kart modeli rol ayarından" "--model sonnet --effort low"
+cp "$T/model-kart-once" isler/004-d/kart.md
+printf '\nEfor: uydurma\n' >> isler/004-d/kart.md
+kod 1 "karttaki geçersiz efor reddedilir" kuru isler/004-d isci
+icerir "geçersiz kart eforu açıklanır" "Geçersiz efor: 'uydurma'"
+kod 0 "incelemeci geçersiz kart eforunu da yok sayar" kuru isler/004-d reviewer
+cp "$T/model-kart-once" isler/004-d/kart.md
+printf '\nEfor: \n' >> isler/004-d/kart.md
+kod 1 "karttaki boş efor reddedilir" kuru isler/004-d isci
+cp "$T/model-kart-once" isler/004-d/kart.md
+for rol in isci reviewer dogrulayici birlestirici; do
+  cp "$T/model-ayarlar-once" ayarlar.sh
+  case "$rol" in isci) alan=EFOR_ISCI;; reviewer) alan=EFOR_INCELEMECI;; dogrulayici) alan=EFOR_DOGRULAYICI;; birlestirici) alan=EFOR_BIRLESTIRICI;; esac
+  printf '\n%s=uydurma\n' "$alan" >> ayarlar.sh
+  kod 1 "$rol ayarlardaki geçersiz efor reddedilir" kuru isler/004-d "$rol"
+  icerir "$rol geçerli eforlar açıklanır" "beklenen: low, medium, high"
+done
+# Ayar dosyası bulunmayan eski kurulumlarda da aynı varsayılanlar kullanılır.
+rm ayarlar.sh
+for rol in isci reviewer dogrulayici birlestirici; do
+  ef=high; [ "$rol" != dogrulayici ] || ef=medium
+  kod 0 "$rol ayar dosyası olmadan" kuru isler/004-d "$rol"
+  icerir "$rol yerleşik varsayılan" "--model sonnet --effort $ef"
+done
+mv "$T/model-ayarlar-once" ayarlar.sh
+printf '{"projects":{}}\n' > "$T/model-guven.json"
+kod 2 "kuru mod güven kontrolünü atlamaz" kuru isler/004-d isci
+icerir "kuru mod güven onayı mesajı" "Güven onayı yok"
+kod 0 "bütün model denemeleri kartı korudu" cmp isler/004-d/kart.md "$T/model-kart-once"
+kod 0 "bütün model denemeleri geçmişi korudu" cmp .gecmis "$T/model-gecmis-once"
+
 echo "birlestirme-hazirla.sh"
 R="$T/depo"; mkdir "$R"
 export GIT_AUTHOR_NAME=duman GIT_AUTHOR_EMAIL=duman@example.invalid GIT_COMMITTER_NAME=duman GIT_COMMITTER_EMAIL=duman@example.invalid
