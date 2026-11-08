@@ -1,7 +1,7 @@
 #!/bin/bash
 # Takip betiği, model harcamaz. Sorun görünce rapor yazıp çıkar; süper ajan bu çıkışla uyanır.
 # kullanım: ./gozcu.sh [kontrol-aralığı-sn] [sessizlik-sınırı-dk]
-cd "$(dirname "$0")"; PY=python3; "$PY" -c "" 2>/dev/null || PY=python; ARA=${1:-600}; SINIR=${2:-20}; touch .gozcu-yasam
+cd "$(dirname "$0")"; export PYTHONUTF8=1; PY=python3; "$PY" -c "" 2>/dev/null || PY=python; ARA=${1:-600}; SINIR=${2:-20}; touch .gozcu-yasam
 while :; do
   sleep "$ARA"; touch .gozcu-yasam
   rapor="$(SINIR="$SINIR" "$PY" - <<'PY'

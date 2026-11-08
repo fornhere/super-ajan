@@ -248,7 +248,7 @@ icerir "başlangıçta 8 test" "Ran 8 tests"
 icerir "başlangıç test sonucu" "OK"
 kod 0 "erken iade hatasını yeniden üret" bash -c 'cd "$1" && PYTHONUTF8=1 "$2" -m kitaplik gecikme --son-tarih 2026-01-15 --iade-tarihi 2026-01-01' _ "$D" "$PY"
 icerir "bilerek bırakılan negatif gecikme" "Gecikme: -14 gün"
-DENEME_MUTLAK="$("$PY" -c 'import pathlib,sys; print(pathlib.Path(sys.argv[1]).resolve().as_posix())' "$D")"
+DENEME_MUTLAK="$(PYTHONUTF8=1 "$PY" -c 'import pathlib,sys; print(pathlib.Path(sys.argv[1]).resolve().as_posix())' "$D")"
 for ad in 901-iade-hatasi 902-gecikme-listesi 903-kullanim-notu; do
   if [ -f "isler/$ad/kart.md" ] && grep -qx 'Durum: hazir' "isler/$ad/kart.md" \
     && grep -qxF "Proje: $DENEME_MUTLAK" "isler/$ad/kart.md"; then
