@@ -3,3 +3,7 @@ isler/*
 .gecmis
 .gozcu-yasam
 .claude/worktrees/
+.env
+.env.*
+*.pem
+*.key
