@@ -1,80 +1,173 @@
-# Süper ajan kiti
+<p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/banner-dark.svg">
+  <img src="assets/banner-light.svg" alt="süper ajan: Bütün Claude Code oturumlarını tek ajan yönetir. İşi dağıtır, kontrol ettirir, geçeni projeye ekler." width="100%">
+</picture>
+</p>
 
-Farklı projelerdeki ayrı Claude Code oturumlarını tek bir süper ajandan yönetin. Siz yalnızca süper ajanla konuşursunuz. Süper ajan her işi kendi projesinde ayrı bir oturumda başlatır, biteni kontrol ettirir, eksik olanı geri gönderir, kararınız gereken yerde size sorar ve geçen kod değişikliğini projeye ekletir.
+<p align="center">
+  <a href="https://github.com/fornhere/super-ajan/actions/workflows/kontrol.yml"><img src="https://github.com/fornhere/super-ajan/actions/workflows/kontrol.yml/badge.svg" alt="kontrol"></a>
+  <img src="https://img.shields.io/badge/s%C3%BCr%C3%BCm-v0.2%20deneysel-b45309?style=flat-square&labelColor=1f2328" alt="sürüm v0.2, deneysel">
+  <img src="https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.293-b45309?style=flat-square&labelColor=1f2328" alt="Claude Code 2.1.293 veya sonrası">
+  <img src="https://img.shields.io/badge/Linux%20%C2%B7%20macOS%20%C2%B7%20Windows-test%20ediliyor-b45309?style=flat-square&labelColor=1f2328" alt="Linux, macOS ve Windows">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/lisans-MIT-b45309?style=flat-square&labelColor=1f2328" alt="MIT lisansı"></a>
+  <a href="https://youtube.com/@fornyapayzeka"><img src="https://img.shields.io/badge/YouTube-Forn%20AI-b45309?style=flat-square&logo=youtube&logoColor=white&labelColor=1f2328" alt="YouTube: Forn AI"></a>
+</p>
 
-Fikir: DeepSeek'in süper ajan yaklaşımı ([dsh-superagent-prototype](https://github.com/deepseek-ai/dsh-superagent-prototype)). Bu kit onun kodu değildir; fikrin Claude Code'a uyarlanmış, farklı projelere yayılmış hâlidir.
-Durum: Deneysel. Gerçek işlerle Claude Code 2.1.293 ve Linux'ta denendi; betikler her güncellemede Linux, macOS ve Windows'ta otomatik test edilir.
+<p align="center"><b>Pencere pencere gezmeyi bırakın. Tek bir ajanla konuşun, gerisini o takip etsin.</b></p>
 
-## Gereksinimler
-- Claude Code 2.1.293 veya sonrası. `claude --bg` ve `claude agents` (araştırma önizlemesi) çalışmalı.
-- Hesabınızda otomatik izin modu (`--permission-mode auto`) açık olmalı.
-- `git` 2.38 veya sonrası, `bash` ve Python 3.8 veya sonrası (`python3` ya da `python`).
-- Linux ve macOS'ta terminalde çalışır; macOS'un kendi bash 3.2 sürümü yeterli. Windows'ta komutları Git for Windows ile gelen Git Bash'te çalıştırın.
-- Platform durumu: Betikler (pano, durum, gözcü, güven ve sürüm kontrolü, birleştirme provası) üç sistemde de otomatik testten geçiyor. Gerçek Claude Code oturumlarıyla uçtan uca deneme şimdilik yalnız Linux'ta yapıldı.
-- Kod işleri için projenin git deposu olması gerekir.
+---
 
-## Kurulum
-1. Depoyu `merkez` adıyla klonlayın. Depo kökü doğrudan merkez klasörüdür; `isler/` klasörü içinde hazır gelir. İlk adım `./kontrol.sh` çalıştırmaktır:
-   ```bash
-   git clone https://github.com/fornhere/super-ajan merkez
-   cd merkez
-   ./kontrol.sh
-   ```
-2. İş vereceğiniz her proje klasöründe bir kez `claude` açıp güven onayı verin. Onay yoksa arka plan oturumu başlamaz, süper ajan size bildirir.
+Farklı işleri farklı oturumda yapmak doğru. Ama oturum sayısı artınca kendinize yeni bir iş açıyorsunuz: **hangisi bitti, hangisi sizi bekliyor, hangisi takıldı?**
 
-## Kullanım
-1. `merkez` içinde normal Claude Code açın, kartları yazdırın: `/is-karti yapılacak iş`. Örnekler `ornek-kartlar/` içinde. Her kartta `Proje:` satırı işin klasörünü söyler.
-2. Kartı okuyun, uygunsa `Durum: hazir` yapın (Türkçe karakter olmadan).
-3. Süper ajanı açın ve "hazır kartları başlat" yazın:
+Süper ajan bu takibi sizden alır. Siz yalnızca onunla konuşursunuz. O her işi kendi projesinde, ayrı bir Claude Code oturumunda başlatır, biten işi işi yapmamış başka bir ajana kontrol ettirir, eksik olanı geri gönderir, kararınız gereken yerde size tek cümleyle sorar ve testlerden geçen kod değişikliğini projeye ekletir. Takılan ya da kapanan oturumu da fark eder.
+
+<p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/akis-dark.svg">
+  <img src="assets/akis-light.svg" alt="Akış: kart, işçi, incelemeci, doğrulayıcı, prova, birleştirici, ana dal. Eksik iş aynı işçiye geri döner, üç turda geçmezse karar sizde. Gözcü on dakikada bir oturumlara bakar." width="100%">
+</picture>
+</p>
+
+## Üç adımda kurulum
+
+**1. İndirin ve makinenizi kontrol edin**
+
+```bash
+git clone https://github.com/fornhere/super-ajan merkez
+cd merkez
+./kontrol.sh ~/projeniz
+```
+
+`kontrol.sh` hiçbir şeyi değiştirmez. Claude Code sürümünü, `--bg` ve `agents` desteğini, git ve Python'u, verdiğiniz projelerde güven onayını yoklar; eksik olanı tek satırla söyler.
+
+**2. Projelerinize güven onayı verin**
+
+İş vereceğiniz her proje klasöründe bir kez `claude` açıp güven onayını kabul edin. Onay yoksa arka plan oturumu başlamaz, süper ajan size bildirir.
+
+**3. İşi anlatın, süper ajanı başlatın**
+
+`merkez` içinde Claude Code açıp işi anlatın: `/is-karti yapılacak iş`. Komut işi inceler, belirsiz yeri size sorar ve bir iş kartı yazar. Kartı okuyup `Durum: hazir` yapın. Sonra:
 
 ```bash
 claude --agent super-ajan --name super-ajan --permission-mode auto
 ```
 
-Kartların durumu: `./pano.sh` · Canlı tablo: `./pano.sh --izle` · Bütün oturumlar: `claude agents`
+ve süper ajana **"hazır kartları başlat"** yazın. Gerisi bu konuşmadan yürür.
 
-## Akış
-işçi → incelemeci → (kod işinde) doğrulayıcı → birleştirme provası → birleştirici → bitti.
-Geçemeyen iş aynı işçiye döner; üç turda geçmezse süper ajan size sorar. Gözcü (`gozcu.sh`) model harcamadan on dakikada bir oturumlara bakar, kapanan veya takılanı süper ajana bildirir.
+## Bir konuşma böyle görünür
 
-## Birleştirme
-Birleştirici, incelemeden ve doğrulamadan geçen dalı ana daldan açtığı geçici bir kopyada birleştirir. Projenizin AGENTS.md veya CLAUDE.md dosyasında birleştirme kuralı (tam test turu vb.) varsa onu uygular, yoksa kartın kontrollerini çalıştırır. Hepsi geçerse ana dalı ileri sarar, geçmezse ana dala dokunmaz. Push yapmaz. Aynı projede aynı anda tek birleştirici çalışır.
-Birleştirmeyi kendiniz yapmak isterseniz süper ajana "birleştirmeden önce sor" deyin. Önemli projelerde bunu öneririz.
+Aşağıdaki satırlar temiz bir kurulumla yapılan gerçek bir provadan, değiştirilmeden alındı. İş, örnek bir projede boş e-postada çöken kayıt formunu düzeltmekti.
+
+```text
+❯ Bu projede birleştirmeden önce bana sor. Hazır kartları başlat.
+● Hazır olan tek kartın (001-bos-eposta-cokmesi) işçi oturumunu başlattım.
+  Bu projede birleştirmeden önce onayını isteyeceğim.
+● Kart 001'in işçisi işini bitirdiğini bildirdi. Kartı incelemeye aldım ve inceleme oturumunu başlattım.
+● Kart 001 incelemeden geçti. Kod kartı olduğu için doğrulamaya aldım ve doğrulama oturumunu başlattım.
+● Kart 001 doğrulamadan geçti ve birleştirme provası temiz çıktı
+  (dal worktree-kart-001-bos-eposta, 1 commit). Bu dalı ana dala birleştireyim mi?
+❯ Evet, birleştir.
+● Kart 001 bitti: worktree-kart-001-bos-eposta dalı ana dala e99b19e birleştirme commit'iyle girdi.
+```
+
+İşi siz yazmadınız, işçinin penceresini açmadınız, kontrolü siz yapmadınız. Karar gereken tek yerde size soruldu.
+
+## Parçalar
+
+Kural basit: **yargı gereken yerde ajan, gerekmeyen yerde program.** Programlar limit harcamaz.
+
+| Parça | Tür | Ne yapar |
+|---|---|---|
+| **süper ajan** | ajan | Konuştuğunuz tek ajan. İşi dağıtır, takip eder, sizi yalnız karar gerekince, iş bitince ya da iş takılınca böler. Dosya yazma aracı yoktur. |
+| **işçi** | ajan | Kartı kendi projesinde, kendi dalında yapar. Bitince, takılınca ya da karar gerekince süper ajana tek cümle yazar. |
+| **incelemeci** | ajan | İşi yapmamış ayrı bir ajan. Kartın "bitti" şartına bakar, istenen gerçekten yapılmış mı kontrol eder. |
+| **doğrulayıcı** | ajan | Kod işlerinde kartın kontrollerini çalıştırır, sonucu yumuşatmadan yazar. |
+| **birleştirici** | ajan | Değişikliği ana dalın geçici bir kopyasında birleştirir, projenin kurallarını ve testlerini orada koşar. Geçerse ana dalı ileri sarar, geçmezse ana dala dokunmaz. Push yapmaz. |
+| `pano.sh` | program | Bütün kartlar tek tabloda, altında özet. `./pano.sh --izle` canlı tablo. |
+| `gozcu.sh` | program | On dakikada bir oturumlara bakar, kapanan ya da takılanı süper ajana söyler. |
+| `birlestirme-hazirla.sh` | program | Ana dala dokunmadan çakışma var mı bakar. |
+
+Yardımcılar: `/is-karti` kart yazdırır, `baslat.sh` oturum açar, `durum.sh` kart durumunu değiştirir, `kontrol.sh` kurulumu yoklar.
+
+## Bu orkestrasyon değil
+
+Orkestrasyon **tek bir işi** parçalara böler: "bana bir site yap" denir, alt ajanlar tasarımı, kodu ve testi yapar, sonuç tek bir sitedir.
+Süper ajan işi parçalamaz, **birbirinden bağımsız işleri** takip eder: bir hata düzeltmesi, bir araştırma, başka bir projede yeni bir özellik. Her biri kendi klasöründe, kendi oturumunda yürür. İkisi birlikte de çalışır; bir oturum kendi işini alt ajanlara bölebilir, süper ajan yine yalnız sonucuyla ilgilenir.
+
+## Kontrol sizde
+
+- **Birleştirmeyi kendiniz yapmak** isterseniz süper ajana "birleştirmeden önce sor" deyin. Önemli projelerde bunu öneririz.
+- Projenizin `AGENTS.md` ya da `CLAUDE.md` dosyasında birleştirme kuralı (tam test turu vb.) varsa birleştirici onu uygular, yoksa kartın kontrollerini çalıştırır.
+- Geçemeyen iş aynı işçiye döner. Üç turda geçmezse karar size gelir.
+- Arada bir, biten işlerden birini açıp kendiniz bakın. Süper ajan işleri yönetiyor, süper ajanı siz yönetiyorsunuz.
 
 ## Dikkat
+
 - Her oturum limitinizden ayrı harcar. Tek iş için kurmayın.
 - Oturumlar bilgisayar kapanınca durur.
 - Bir bilgisayarda aynı anda tek süper ajan çalıştırın; işçiler `super-ajan` adına mesaj atar.
-- Otomatik mod izin sorularını azaltır. Oturumlar internetten okudukları metinden etkilenebilir; önemli işlerde ayrı bir işletim sistemi hesabı veya kapsayıcı kullanın.
-- Süper ajanın dosya yazma aracı yok, ama kabuk komutu çalıştırabilir. Bu tam bir güvenlik sınırı değil, davranış kuralıdır. Arada bir biten işlerden birini açıp kendiniz bakın.
+- Otomatik izin modu soruları azaltır. Oturumlar internetten okudukları metinden etkilenebilir; önemli işlerde ayrı bir işletim sistemi hesabı veya kapsayıcı kullanın.
+- Süper ajanın dosya yazma aracı yok, ama kabuk komutu çalıştırabilir. Bu tam bir güvenlik sınırı değil, davranış kuralıdır.
 - `.env` ve anahtar dosyaları işçilere yasaktır, ama bunu kural sağlar, kilit değil.
 - Kod işlerinde arka plan oturumları projenizin içinde `.claude/worktrees/` klasörü açar. Bu klasörü projenizin `.gitignore` dosyasına ekleyin. İş bitince eski dalları ve worktree'leri `git worktree list` ile görüp kendiniz temizleyin.
 
-## Parçalar
-- Ajanlar: süper ajan (`.claude/agents/`), işçi, incelemeci, doğrulayıcı, birleştirici (`roller/`).
-- Programlar, model harcamaz: `pano.sh`, `gozcu.sh`, `birlestirme-hazirla.sh`. Yardımcılar: `baslat.sh` oturum açar, `durum.sh` kart durumunu değiştirir.
+## Gereksinimler ve platformlar
 
-## Lisans ve sürümler
-MIT lisansı: `LICENSE`. Sürüm notları: `CHANGELOG.md`.
+- Claude Code 2.1.293 veya sonrası; `claude --bg` ve `claude agents` (araştırma önizlemesi) çalışmalı.
+- Hesabınızda otomatik izin modu (`--permission-mode auto`) açık olmalı.
+- `git` 2.38 veya sonrası, `bash` ve Python 3.8 veya sonrası (`python3` ya da `python`).
+- Kod işleri için projenin git deposu olması gerekir.
 
-## English summary
-**Super-agent kit** lets you manage separate Claude Code sessions spread across different projects through a single "super agent". You talk only to the super agent. It starts each job in its own session inside the job's project, has finished work reviewed, sends incomplete work back, asks you only when a decision is yours, and has accepted code changes merged. It is experimental. The documentation above is in Turkish.
+| Sistem | Durum |
+|---|---|
+| Linux | Gerçek işlerle uçtan uca denendi, betikler her güncellemede otomatik test ediliyor |
+| macOS | Betikler her güncellemede otomatik test ediliyor (macOS'un kendi bash 3.2 sürümü dahil); gerçek oturumlarla henüz denenmedi |
+| Windows | Komutları Git for Windows ile gelen Git Bash'te çalıştırın. Betikler her güncellemede otomatik test ediliyor; gerçek oturumlarla henüz denenmedi |
+
+<details>
+<summary><b>Sık sorulanlar</b></summary>
+
+**Limitimi çok mu harcar?**
+Her işçi, incelemeci ve doğrulayıcı ayrı bir oturumdur, yani tek oturumdan fazla harcar. Pano, gözcü ve birleştirme provası model kullanmaz. Aynı anda birkaç iş yürütmüyorsanız gerek yok.
+
+**Yöneticiye ucuz model verebilir miyim?**
+`.claude/agents/super-ajan.md` dosyasındaki `model:` satırını değiştirebilirsiniz. DeepSeek yöneticiye hafif modelin yettiğini söylüyor; bu kitte güçlü model seçildi, çünkü işi geri gönderme kararı süper ajanda.
+
+**Kod dışı işler olur mu?**
+Olur. Kartta `Tür: icerik` yazan işler (araştırma, metin, not) incelemeden geçince biter, birleştirme adımı yoktur.
+
+**Bir oturum takılırsa ne olur?**
+Gözcü on dakikada bir bakar. Kapanan ya da uzun süredir hareketsiz oturumu süper ajana bildirir, süper ajan da size tek cümleyle yazar.
+
+**Süper ajan bilgisayarım kapalıyken çalışır mı?**
+Hayır. Bilgisayarınız açıkken çalışır.
+
+</details>
+
+## Kaynak ve lisans
+
+Fikir DeepSeek'in süper ajan yaklaşımından geliyor: [deepseek-ai/dsh-superagent-prototype](https://github.com/deepseek-ai/dsh-superagent-prototype). Bu kit onun kodu değildir; fikrin Claude Code'a uyarlanmış, farklı projelere yayılmış hâlidir.
+
+[MIT lisansı](LICENSE) · [Sürüm notları](CHANGELOG.md) · [Forn AI, YouTube](https://youtube.com/@fornyapayzeka)
+
+<details>
+<summary><b>English summary</b></summary>
+
+**Super-agent kit** lets you manage separate Claude Code sessions spread across different projects through a single "super agent". You talk only to the super agent. It starts each job in its own session inside the job's project, has finished work checked by a different agent, sends incomplete work back, asks you only when a decision is yours, and has code changes that pass the project's checks merged. It also notices sessions that stall or close. Experimental. The documentation above is in Turkish.
 
 This kit is not DeepSeek's code. It is an adaptation of the idea in [deepseek-ai/dsh-superagent-prototype](https://github.com/deepseek-ai/dsh-superagent-prototype) to Claude Code.
 
-**Requirements**
-- Claude Code 2.1.293 or later, with `claude --bg` and `claude agents` (research preview) working.
-- Auto permission mode (`--permission-mode auto`) enabled on your account.
-- `git` 2.38+, `bash` and Python 3.8+ (`python3` or `python`). Works in a Linux or macOS terminal (macOS's built-in bash 3.2 is enough); on Windows use Git Bash from Git for Windows.
-- The scripts are tested automatically on Linux, macOS and Windows on every change. End-to-end runs with real Claude Code sessions have so far been done on Linux only.
-- Code jobs require the project to be a git repository.
+**Requirements:** Claude Code 2.1.293+ with `claude --bg` and `claude agents` (research preview); auto permission mode on your account; `git` 2.38+, `bash`, Python 3.8+. Works in a Linux or macOS terminal (macOS's built-in bash 3.2 is enough); on Windows use Git Bash. Scripts are tested automatically on all three systems; end-to-end runs with real sessions have been done on Linux only.
 
 **Use in three steps**
-1. Clone and check: `git clone https://github.com/fornhere/super-ajan merkez`, then run `./kontrol.sh` inside it. In each project you will give jobs to, open `claude` once and accept the trust prompt.
-2. In `merkez`, open Claude Code and write job cards with `/is-karti <the job>` (examples in `ornek-kartlar/`). Read each card and, if fine, set `Durum: hazir` (no Turkish characters).
-3. Start the super agent and say "start the ready cards" (in Turkish: "hazır kartları başlat"):
+1. `git clone https://github.com/fornhere/super-ajan merkez`, then `./kontrol.sh ~/your-project` inside it. Open `claude` once in each project and accept the trust prompt.
+2. In `merkez`, open Claude Code and write job cards with `/is-karti <the job>`. Read each card and set `Durum: hazir`.
+3. Start the super agent and say "hazır kartları başlat" ("start the ready cards"):
    ```bash
    claude --agent super-ajan --name super-ajan --permission-mode auto
    ```
 
-Each session spends from your usage limit separately. Auto mode reduces permission prompts, and sessions may be affected by text they read from the internet, so use a separate OS account or container for important work.
+Say "birleştirmeden önce sor" ("ask before merging") if you want to merge yourself. Each session spends from your usage limit separately; use a separate OS account or container for important work.
+
+</details>
