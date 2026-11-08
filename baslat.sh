@@ -12,13 +12,15 @@ import json,os,subprocess,sys
 try:
     d=json.load(open(os.path.expanduser('~/.claude.json'))).get('projects',{})
 except Exception: sys.exit(0)
-p=os.path.realpath(sys.argv[1]); adaylar={p}
-try:
-    k=subprocess.run(['git','-C',p,'rev-parse','--show-toplevel'],capture_output=True,text=True).stdout.strip()
-    if k: adaylar.add(os.path.realpath(k))
-except Exception: pass
-# Arka plan oturumu üst klasörün onayını saymaz; yalnız klasörün kendisine veya git köküne bakılır.
-sys.exit(0 if any(d.get(a,{}).get('hasTrustDialogAccepted') for a in adaylar) else 1)
+ok=lambda a: d.get(a,{}).get('hasTrustDialogAccepted')
+p=os.path.realpath(sys.argv[1])
+k=subprocess.run(['git','-C',p,'rev-parse','--show-toplevel'],capture_output=True,text=True).stdout.strip()
+# Git deposunda arka plan oturumu üst klasörün onayını saymaz: klasörün kendisi veya git kökü onaylı olmalı.
+if k: sys.exit(0 if ok(p) or ok(os.path.realpath(k)) else 1)
+while p!='/':
+    if ok(p): sys.exit(0)
+    p=os.path.dirname(p)
+sys.exit(1)
 P
 case "$ROL" in isci) AD2="$AD"; MODEL=sonnet; EF=high;; reviewer) AD2="$AD-reviewer"; MODEL=sonnet; EF=high;; dogrulayici) AD2="$AD-dogrulayici"; MODEL=sonnet; EF=medium;; birlestirici) AD2="$AD-birlestirici"; MODEL=sonnet; EF=high;; esac
 cd "$PROJE"
