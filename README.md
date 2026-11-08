@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="https://github.com/fornhere/super-ajan/actions/workflows/kontrol.yml"><img src="https://github.com/fornhere/super-ajan/actions/workflows/kontrol.yml/badge.svg" alt="kontrol"></a>
-  <img src="https://img.shields.io/badge/s%C3%BCr%C3%BCm-v0.2%20deneysel-b45309?style=flat-square&labelColor=1f2328" alt="sürüm v0.2, deneysel">
+  <img src="https://img.shields.io/badge/s%C3%BCr%C3%BCm-v0.3%20deneysel-b45309?style=flat-square&labelColor=1f2328" alt="sürüm v0.3, deneysel">
   <img src="https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.293-b45309?style=flat-square&labelColor=1f2328" alt="Claude Code 2.1.293 veya sonrası">
   <img src="https://img.shields.io/badge/Linux%20%C2%B7%20macOS%20%C2%B7%20Windows-test%20ediliyor-b45309?style=flat-square&labelColor=1f2328" alt="Linux, macOS ve Windows">
   <a href="LICENSE"><img src="https://img.shields.io/badge/lisans-MIT-b45309?style=flat-square&labelColor=1f2328" alt="MIT lisansı"></a>
@@ -28,6 +28,16 @@ Süper ajan bu takibi sizden alır. Siz yalnızca onunla konuşursunuz. O her i�
   <img src="assets/akis-light.svg" alt="Akış: kart, işçi, incelemeci, doğrulayıcı, prova, birleştirici, ana dal. Eksik iş aynı işçiye geri döner, üç turda geçmezse karar sizde. Gözcü on dakikada bir oturumlara bakar." width="100%">
 </picture>
 </p>
+
+## İlk kez mi deneyeceksiniz?
+
+Kendi projenize dokunmadan 10 dakikada görün. Deneme seti, bilerek hatası ve eksik özelliği bırakılmış küçük bir proje kurar ve üç kartı hazırlar: bir hata düzeltmesi, size seçenek soran bir özellik ve ona bağlı bir içerik işi.
+
+```bash
+bash deneme/kur.sh ../kitaplik-denemesi
+```
+
+Ayrıntılar: [deneme/README.md](deneme/README.md)
 
 ## Üç adımda kurulum
 
@@ -54,6 +64,18 @@ claude --agent super-ajan --name super-ajan --permission-mode auto
 ```
 
 ve süper ajana **"hazır kartları başlat"** yazın. Gerisi bu konuşmadan yürür.
+
+## Ne için kullanılır
+
+| Ne yapmak istiyorsunuz | Nereden başlayın |
+|---|---|
+| Sistemi güvenle denemek | [Deneme seti](deneme/README.md) |
+| Bir projede birkaç hatayı aynı anda düzeltmek | [KULLANIM.md → 2](KULLANIM.md#2-tek-projede-birkaç-hata-düzeltmesi) |
+| Farklı projelerde ilgisiz işleri birlikte yürütmek | [KULLANIM.md → 3](KULLANIM.md#3-farklı-projelerde-aynı-anda-ilgisiz-işler) |
+| Önce araştırıp sonra karar verip uygulamak | [KULLANIM.md → 4](KULLANIM.md#4-araştırma--karar-özeti--uygulama) |
+| Her birleştirmeyi kendiniz onaylamak | [KULLANIM.md → 5](KULLANIM.md#5-temkinli-mod-birleştirmeden-önce-sor) |
+| Gece açık bırakıp sabah sonuçlara bakmak | [KULLANIM.md → 6](KULLANIM.md#6-bilgisayarı-açık-bırakıp-uzun-süre-çalıştırmak) |
+| İyi bir iş kartı yazmak | [10 örnek kart ve rehber](ornek-kartlar/README.md) |
 
 ## Bir konuşma böyle görünür
 
@@ -88,7 +110,20 @@ Kural basit: **yargı gereken yerde ajan, gerekmeyen yerde program.** Programlar
 | `gozcu.sh` | program | On dakikada bir oturumlara bakar, kapanan ya da takılanı süper ajana söyler. |
 | `birlestirme-hazirla.sh` | program | Ana dala dokunmadan çakışma var mı bakar. |
 
-Yardımcılar: `/is-karti` kart yazdırır, `baslat.sh` oturum açar, `durum.sh` kart durumunu değiştirir, `kontrol.sh` kurulumu yoklar.
+Yardımcılar: `/is-karti` kart yazdırır, `baslat.sh` oturum açar, `durum.sh` kart durumunu değiştirir, `kontrol.sh` kurulumu yoklar, `ayarlar.sh` modelleri seçer.
+
+## Hangi rol hangi model
+
+| Rol | Varsayılan | Nereden değişir |
+|---|---|---|
+| süper ajan | opus, high | `.claude/agents/super-ajan.md` → `model:`, `effort:` |
+| işçi | sonnet, high | `ayarlar.sh`; tek bir iş için karta `Model: opus` |
+| incelemeci | sonnet, high | `ayarlar.sh` |
+| doğrulayıcı | sonnet, medium | `ayarlar.sh` |
+| birleştirici | sonnet, high | `ayarlar.sh` |
+| gözcü, pano, prova | model yok | — |
+
+En kolayı profil seçmek: `ayarlar.sh` içinde `PROFIL=ekonomik`, `dengeli` (varsayılan) ya da `guclu`. Profiller öneridir, ölçülmedi. Seçimi oturum açmadan görmek için: `SUPER_AJAN_KURU=1 ./baslat.sh isler/<kart> isci`. Ayrıntı: [KULLANIM.md](KULLANIM.md#hangi-rol-hangi-model).
 
 ## Bu orkestrasyon değil
 
@@ -133,6 +168,9 @@ Her işçi, incelemeci ve doğrulayıcı ayrı bir oturumdur, yani tek oturumdan
 
 **Yöneticiye ucuz model verebilir miyim?**
 `.claude/agents/super-ajan.md` dosyasındaki `model:` satırını değiştirebilirsiniz. DeepSeek yöneticiye hafif modelin yettiğini söylüyor; bu kitte güçlü model seçildi, çünkü işi geri gönderme kararı süper ajanda.
+
+**Zor bir işe güçlü model verebilir miyim?**
+Evet. Karta `Model: opus` ve isterseniz `Efor: high` satırı ekleyin; yalnız o işin işçisi etkilenir.
 
 **Kod dışı işler olur mu?**
 Olur. Kartta `Tür: icerik` yazan işler (araştırma, metin, not) incelemeden geçince biter, birleştirme adımı yoktur.

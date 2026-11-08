@@ -1,5 +1,14 @@
 # Değişiklik günlüğü
 
+## v0.3: kolay kullanım
+
+- `deneme/`: kendi projenize dokunmadan 10 dakikalık deneme. `bash deneme/kur.sh <hedef>` hatası ve eksik özelliği olan küçük bir proje kurar, 901-903 kartlarını hazırlar.
+- `ornek-kartlar/`: 10 detaylı örnek kart (hata, özellik, test, bağımlılık, yeniden düzenleme, belge, performans, araştırma, veri raporu, bağımlı karar özeti) ve kart yazma rehberi.
+- `ayarlar.sh`: rol başına model ve efor; `PROFIL=ekonomik|dengeli|guclu`; kartta `Model:` ve `Efor:` ile tek işin işçisine özel model.
+- `KULLANIM.md`: yedi adım adım iş akışı, rol-model tablosu, süper ajana kısa cümleler.
+- `SUPER_AJAN_KURU=1`: `baslat.sh` oturum açmadan çalıştıracağı komutu gösterir.
+- Duman testi 169 kontrole çıktı.
+
 ## v0.2: Linux, macOS ve Windows
 
 - Betikler macOS (kendi bash 3.2 sürümü dahil) ve Windows Git Bash'te çalışır; GitHub otomatik kontrolü üç sistemde koşar.
