@@ -253,7 +253,7 @@ for ad in 901-iade-hatasi 902-gecikme-listesi 903-kullanim-notu; do
   if [ -f "isler/$ad/kart.md" ] && grep -qx 'Durum: hazir' "isler/$ad/kart.md" \
     && grep -qxF "Proje: $DENEME_MUTLAK" "isler/$ad/kart.md"; then
     gecti "hazır kart ve mutlak proje yolu: $ad"
-  else kaldi "kart veya proje yolu yanlış: $ad"; fi
+  else kaldi "kart veya proje yolu yanlış: $ad" "beklenen: Proje: $DENEME_MUTLAK | kartta: $(grep -m1 '^Proje:' "isler/$ad/kart.md" 2>/dev/null) | $(grep -m1 '^Durum:' "isler/$ad/kart.md" 2>/dev/null)"; fi
 done
 if grep -F '{{PROJE}}' isler/90*/kart.md; then kaldi "kartlarda yer tutucu kaldı"; else gecti "kartlarda yer tutucu yok"; fi
 kod 0 "deneme kartları başlatılabilirlik" ./pano.sh --baslayabilir
