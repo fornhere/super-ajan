@@ -46,6 +46,7 @@ Birleştirmeyi kendiniz yapmak isterseniz süper ajana "birleştirmeden önce so
 - Otomatik mod izin sorularını azaltır. Oturumlar internetten okudukları metinden etkilenebilir; önemli işlerde ayrı bir işletim sistemi hesabı veya kapsayıcı kullanın.
 - Süper ajanın dosya yazma aracı yok, ama kabuk komutu çalıştırabilir. Bu tam bir güvenlik sınırı değil, davranış kuralıdır. Arada bir biten işlerden birini açıp kendiniz bakın.
 - `.env` ve anahtar dosyaları işçilere yasaktır, ama bunu kural sağlar, kilit değil.
+- Kod işlerinde arka plan oturumları projenizin içinde `.claude/worktrees/` klasörü açar. Bu klasörü projenizin `.gitignore` dosyasına ekleyin. İş bitince eski dalları ve worktree'leri `git worktree list` ile görüp kendiniz temizleyin.
 
 ## Parçalar
 - Ajanlar: süper ajan (`.claude/agents/`), işçi, incelemeci, doğrulayıcı, birleştirici (`roller/`).
