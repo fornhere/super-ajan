@@ -1,14 +1,14 @@
 #!/bin/bash
 # Takip betiği, model harcamaz. Sorun görünce rapor yazıp çıkar; süper ajan bu çıkışla uyanır.
 # kullanım: ./gozcu.sh [kontrol-aralığı-sn] [sessizlik-sınırı-dk]
-cd "$(dirname "$0")"; ARA=${1:-600}; SINIR=${2:-20}; touch .gozcu-yasam
+cd "$(dirname "$0")"; PY=python3; "$PY" -c "" 2>/dev/null || PY=python; ARA=${1:-600}; SINIR=${2:-20}; touch .gozcu-yasam
 while :; do
   sleep "$ARA"; touch .gozcu-yasam
-  rapor="$(SINIR="$SINIR" python3 - <<'PY'
-import glob,json,os,re,subprocess,time
+  rapor="$(SINIR="$SINIR" "$PY" - <<'PY'
+import glob,json,os,re,shutil,subprocess,time
 sinir=int(os.environ['SINIR'])*60; simdi=time.time()
 try:
-    d=json.loads(subprocess.run(['claude','agents','--json','--all'],capture_output=True,text=True,timeout=60,stdin=subprocess.DEVNULL).stdout)
+    d=json.loads(subprocess.run([shutil.which('claude') or 'claude','agents','--json','--all'],capture_output=True,text=True,timeout=60,stdin=subprocess.DEVNULL).stdout)
 except Exception as e:
     print('oturum listesi alınamadı:',e); raise SystemExit
 d=d if isinstance(d,list) else d.get('sessions',d)

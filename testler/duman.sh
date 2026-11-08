@@ -27,6 +27,7 @@ kart 003-c hazir 004-d        # beklediği hazir: başlayamaz
 kart 004-d hazir yok          # beklemiyor: başlayabilir
 kart 005-e taslak yok         # hazir değil: başlayamaz
 kart 006-f hazir 099-yok      # beklediği kart yok: başlayamaz
+kart 007-g tikandi yok         # tıkanan kart panoda uyarı verir
 
 echo "durum.sh"
 kod 0 "geçerli durum kabul" ./durum.sh isler/005-e calisiyor
@@ -43,11 +44,14 @@ kod 1 "olmayan kart reddedilir" ./durum.sh isler/yok-kart hazir
 echo "pano.sh"
 kod 0 "tablo" ./pano.sh
 icerir "başlık" "KART"
-for k in 001-a 002-b 003-c 004-d 005-e 006-f; do icerir "tabloda $k" "$k"; done
+for k in 001-a 002-b 003-c 004-d 005-e 006-f 007-g; do icerir "tabloda $k" "$k"; done
+icerir "özet satırı" "özet:"
+icerir "özette hazir sayısı" "4 hazir"
+icerir "tıkanan kart uyarısı" "dikkat: 007-g"
 kod 0 "--baslayabilir" ./pano.sh --baslayabilir
 B="$SON"
 for k in 002-b 004-d; do icerir "başlayabilir: $k" "$k"; done
-for k in 001-a 003-c 005-e 006-f; do icermez "başlayamaz: $k" "$k"; done
+for k in 001-a 003-c 005-e 006-f 007-g; do icermez "başlayamaz: $k" "$k"; done
 if [ "$(printf '%s\n' "$B" | grep -c .)" = 2 ]; then gecti "tam iki kart"; else kaldi "kart sayısı 2 değil" "$B"; fi
 
 echo "baslat.sh (claude açılmaz)"
@@ -74,6 +78,39 @@ if g init -q -b main && echo bir > "$R/a.txt" && echo x > "$R/b.txt" && g add . 
 else
   kaldi "geçici git deposu kurulamadı (git sürümü: $(git --version))"
 fi
+
+echo "kontrol.sh (sahte claude ile)"
+mkdir -p "$T/sahte-bin"
+cat > "$T/sahte-bin/claude" <<'SAHTE'
+#!/bin/bash
+case "$1" in
+  --version) echo "${SAHTE_SURUM:-2.1.293} (Claude Code)";;
+  --help) printf -- '  --bg  arka planda başlat\n  --permission-mode <mode>  izin modu\n    (choices: "default", "auto")\n';;
+  agents) echo "Usage: claude agents [options]";;
+esac
+SAHTE
+chmod +x "$T/sahte-bin/claude"
+kod 0 "yeterli sürüm" env PATH="$T/sahte-bin:$PATH" SAHTE_SURUM=2.2.0 ./kontrol.sh
+icerir "sürüm kabul" "claude sürümü 2.2.0"
+icerir "--bg görülür" "claude --bg destekleniyor"
+kod 1 "eski sürüm reddedilir" env PATH="$T/sahte-bin:$PATH" SAHTE_SURUM=2.1.200 ./kontrol.sh
+icerir "eski sürüm mesajı" "en az 2.1.293"
+kod 0 "eşit sürüm kabul" env PATH="$T/sahte-bin:$PATH" SAHTE_SURUM=2.1.293 ./kontrol.sh
+
+echo "guven.py"
+PY=python3; "$PY" -c "" 2>/dev/null || PY=python
+G="$T/guven"; mkdir -p "$G/onayli-depo" "$G/onaysiz-depo" "$G/ust/alt" "$T/baska"
+git -C "$G/onayli-depo" init -q; git -C "$G/onaysiz-depo" init -q
+"$PY" - "$G" "$G/onayli-depo" > "$T/claude.json" <<'JS'
+import json,os,sys
+print(json.dumps({"projects":{os.path.realpath(a).replace(os.sep,"/"):{"hasTrustDialogAccepted":True} for a in sys.argv[1:]}}))
+JS
+export SUPER_AJAN_CLAUDE_JSON="$T/claude.json"
+kod 0 "onaylı git deposu" "$PY" guven.py "$G/onayli-depo"
+kod 1 "üstü onaylı ama kendisi onaysız git deposu" "$PY" guven.py "$G/onaysiz-depo"
+kod 0 "git dışı klasör üstten onay alır" "$PY" guven.py "$G/ust/alt"
+kod 1 "hiçbir üstü onaylı olmayan klasör" "$PY" guven.py "$T/baska"
+unset SUPER_AJAN_CLAUDE_JSON
 
 echo
 echo "sonuç: $OK geçti, $HATA hata"
