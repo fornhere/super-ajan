@@ -8,15 +8,17 @@ KART="$MERKEZ/$K/kart.md"; AD="$(basename "$K")"
 PROJE="$(sed -n 's/^Proje: //p' "$KART" | head -1)"
 [ -d "$PROJE" ] || { echo "Proje klasörü yok: $PROJE"; exit 1; }
 python3 - "$PROJE" <<'P' || { echo "Güven onayı yok: $PROJE içinde bir kez claude açıp onay verin"; exit 2; }
-import json,os,sys
+import json,os,subprocess,sys
 try:
     d=json.load(open(os.path.expanduser('~/.claude.json'))).get('projects',{})
 except Exception: sys.exit(0)
-p=os.path.realpath(sys.argv[1])
-while p!='/':
-    if d.get(p,{}).get('hasTrustDialogAccepted'): sys.exit(0)
-    p=os.path.dirname(p)
-sys.exit(1)
+p=os.path.realpath(sys.argv[1]); adaylar={p}
+try:
+    k=subprocess.run(['git','-C',p,'rev-parse','--show-toplevel'],capture_output=True,text=True).stdout.strip()
+    if k: adaylar.add(os.path.realpath(k))
+except Exception: pass
+# Arka plan oturumu üst klasörün onayını saymaz; yalnız klasörün kendisine veya git köküne bakılır.
+sys.exit(0 if any(d.get(a,{}).get('hasTrustDialogAccepted') for a in adaylar) else 1)
 P
 case "$ROL" in isci) AD2="$AD"; MODEL=sonnet; EF=high;; reviewer) AD2="$AD-reviewer"; MODEL=sonnet; EF=high;; dogrulayici) AD2="$AD-dogrulayici"; MODEL=sonnet; EF=medium;; birlestirici) AD2="$AD-birlestirici"; MODEL=sonnet; EF=high;; esac
 cd "$PROJE"
