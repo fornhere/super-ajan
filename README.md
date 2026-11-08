@@ -2,7 +2,7 @@
 
 Farklı projelerdeki ayrı Claude Code oturumlarını tek bir süper ajandan yönetin. Siz yalnızca süper ajanla konuşursunuz. Süper ajan her işi kendi projesinde ayrı bir oturumda başlatır, biteni kontrol ettirir, eksik olanı geri gönderir, kararınız gereken yerde size sorar ve geçen kod değişikliğini projeye ekletir.
 
-Fikir: DeepSeek'in süper ajan yaklaşımı. Bu kit onun Claude Code'a uyarlanmış, farklı projelere yayılmış hâlidir.
+Fikir: DeepSeek'in süper ajan yaklaşımı ([dsh-superagent-prototype](https://github.com/deepseek-ai/dsh-superagent-prototype)). Bu kit onun kodu değildir; fikrin Claude Code'a uyarlanmış, farklı projelere yayılmış hâlidir.
 Durum: Deneysel. Claude Code 2.1.293 ile Linux'ta denendi.
 
 ## Gereksinimler
@@ -12,7 +12,12 @@ Durum: Deneysel. Claude Code 2.1.293 ile Linux'ta denendi.
 - Kod işleri için projenin git deposu olması gerekir.
 
 ## Kurulum
-1. Bu klasörü `merkez` adıyla bir yere kopyalayın ve içinde `isler/` klasörünü oluşturun.
+1. Depoyu `merkez` adıyla klonlayın. Depo kökü doğrudan merkez klasörüdür; `isler/` klasörü içinde hazır gelir. İlk adım `./kontrol.sh` çalıştırmaktır:
+   ```bash
+   git clone https://github.com/fornhere/super-ajan merkez
+   cd merkez
+   ./kontrol.sh
+   ```
 2. İş vereceğiniz her proje klasöründe bir kez `claude` açıp güven onayı verin. Onay yoksa arka plan oturumu başlamaz, süper ajan size bildirir.
 
 ## Kullanım
@@ -45,3 +50,27 @@ Birleştirmeyi kendiniz yapmak isterseniz süper ajana "birleştirmeden önce so
 ## Parçalar
 - Ajanlar: süper ajan (`.claude/agents/`), işçi, incelemeci, doğrulayıcı, birleştirici (`roller/`).
 - Programlar, model harcamaz: `pano.sh`, `gozcu.sh`, `birlestirme-hazirla.sh`. Yardımcılar: `baslat.sh` oturum açar, `durum.sh` kart durumunu değiştirir.
+
+## Lisans ve sürümler
+MIT lisansı: `LICENSE`. Sürüm notları: `CHANGELOG.md`.
+
+## English summary
+**Super-agent kit** lets you manage separate Claude Code sessions spread across different projects through a single "super agent". You talk only to the super agent. It starts each job in its own session inside the job's project, has finished work reviewed, sends incomplete work back, asks you only when a decision is yours, and has accepted code changes merged. It is experimental (tried with Claude Code 2.1.293 on Linux). The documentation above is in Turkish.
+
+This kit is not DeepSeek's code. It is an adaptation of the idea in [deepseek-ai/dsh-superagent-prototype](https://github.com/deepseek-ai/dsh-superagent-prototype) to Claude Code.
+
+**Requirements**
+- Claude Code 2.1.293 or later, with `claude --bg` and `claude agents` (research preview) working.
+- Auto permission mode (`--permission-mode auto`) enabled on your account.
+- `git`, `bash` and `python3`. Tried on Linux; macOS is expected to work but untested; Windows needs WSL.
+- Code jobs require the project to be a git repository.
+
+**Use in three steps**
+1. Clone and check: `git clone https://github.com/fornhere/super-ajan merkez`, then run `./kontrol.sh` inside it. In each project you will give jobs to, open `claude` once and accept the trust prompt.
+2. In `merkez`, open Claude Code and write job cards with `/is-karti <the job>` (examples in `ornek-kartlar/`). Read each card and, if fine, set `Durum: hazir` (no Turkish characters).
+3. Start the super agent and say "start the ready cards" (in Turkish: "hazır kartları başlat"):
+   ```bash
+   claude --agent super-ajan --name super-ajan --permission-mode auto
+   ```
+
+Each session spends from your usage limit separately. Auto mode reduces permission prompts, and sessions may be affected by text they read from the internet, so use a separate OS account or container for important work.
