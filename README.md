@@ -3,12 +3,14 @@
 Farklı projelerdeki ayrı Claude Code oturumlarını tek bir süper ajandan yönetin. Siz yalnızca süper ajanla konuşursunuz. Süper ajan her işi kendi projesinde ayrı bir oturumda başlatır, biteni kontrol ettirir, eksik olanı geri gönderir, kararınız gereken yerde size sorar ve geçen kod değişikliğini projeye ekletir.
 
 Fikir: DeepSeek'in süper ajan yaklaşımı ([dsh-superagent-prototype](https://github.com/deepseek-ai/dsh-superagent-prototype)). Bu kit onun kodu değildir; fikrin Claude Code'a uyarlanmış, farklı projelere yayılmış hâlidir.
-Durum: Deneysel. Claude Code 2.1.293 ile Linux'ta denendi.
+Durum: Deneysel. Gerçek işlerle Claude Code 2.1.293 ve Linux'ta denendi; betikler her güncellemede Linux, macOS ve Windows'ta otomatik test edilir.
 
 ## Gereksinimler
 - Claude Code 2.1.293 veya sonrası. `claude --bg` ve `claude agents` (araştırma önizlemesi) çalışmalı.
 - Hesabınızda otomatik izin modu (`--permission-mode auto`) açık olmalı.
-- `git`, `bash` ve `python3`. Linux'ta denendi; macOS'ta çalışması beklenir ama denenmedi. Windows'ta WSL gerekir.
+- `git` 2.38 veya sonrası, `bash` ve Python 3.8 veya sonrası (`python3` ya da `python`).
+- Linux ve macOS'ta terminalde çalışır; macOS'un kendi bash 3.2 sürümü yeterli. Windows'ta komutları Git for Windows ile gelen Git Bash'te çalıştırın.
+- Platform durumu: Betikler (pano, durum, gözcü, güven ve sürüm kontrolü, birleştirme provası) üç sistemde de otomatik testten geçiyor. Gerçek Claude Code oturumlarıyla uçtan uca deneme şimdilik yalnız Linux'ta yapıldı.
 - Kod işleri için projenin git deposu olması gerekir.
 
 ## Kurulum
@@ -29,7 +31,7 @@ Durum: Deneysel. Claude Code 2.1.293 ile Linux'ta denendi.
 claude --agent super-ajan --name super-ajan --permission-mode auto
 ```
 
-Kartların durumu: `./pano.sh` · Bütün oturumlar: `claude agents`
+Kartların durumu: `./pano.sh` · Canlı tablo: `./pano.sh --izle` · Bütün oturumlar: `claude agents`
 
 ## Akış
 işçi → incelemeci → (kod işinde) doğrulayıcı → birleştirme provası → birleştirici → bitti.
@@ -56,14 +58,15 @@ Birleştirmeyi kendiniz yapmak isterseniz süper ajana "birleştirmeden önce so
 MIT lisansı: `LICENSE`. Sürüm notları: `CHANGELOG.md`.
 
 ## English summary
-**Super-agent kit** lets you manage separate Claude Code sessions spread across different projects through a single "super agent". You talk only to the super agent. It starts each job in its own session inside the job's project, has finished work reviewed, sends incomplete work back, asks you only when a decision is yours, and has accepted code changes merged. It is experimental (tried with Claude Code 2.1.293 on Linux). The documentation above is in Turkish.
+**Super-agent kit** lets you manage separate Claude Code sessions spread across different projects through a single "super agent". You talk only to the super agent. It starts each job in its own session inside the job's project, has finished work reviewed, sends incomplete work back, asks you only when a decision is yours, and has accepted code changes merged. It is experimental. The documentation above is in Turkish.
 
 This kit is not DeepSeek's code. It is an adaptation of the idea in [deepseek-ai/dsh-superagent-prototype](https://github.com/deepseek-ai/dsh-superagent-prototype) to Claude Code.
 
 **Requirements**
 - Claude Code 2.1.293 or later, with `claude --bg` and `claude agents` (research preview) working.
 - Auto permission mode (`--permission-mode auto`) enabled on your account.
-- `git`, `bash` and `python3`. Tried on Linux; macOS is expected to work but untested; Windows needs WSL.
+- `git` 2.38+, `bash` and Python 3.8+ (`python3` or `python`). Works in a Linux or macOS terminal (macOS's built-in bash 3.2 is enough); on Windows use Git Bash from Git for Windows.
+- The scripts are tested automatically on Linux, macOS and Windows on every change. End-to-end runs with real Claude Code sessions have so far been done on Linux only.
 - Code jobs require the project to be a git repository.
 
 **Use in three steps**
