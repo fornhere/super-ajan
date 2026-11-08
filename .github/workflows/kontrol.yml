@@ -1,0 +1,23 @@
+name: kontrol
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  duman:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Duman testi
+        run: bash testler/duman.sh
+
+      - name: shellcheck (bilgi amaçlı, kalmaz)
+        continue-on-error: true
+        run: |
+          if command -v shellcheck >/dev/null; then
+            shellcheck ./*.sh testler/*.sh || true
+          else
+            echo "shellcheck yok, atlandı"
+          fi
