@@ -112,6 +112,77 @@ kod 0 "git dışı klasör üstten onay alır" "$PY" guven.py "$G/ust/alt"
 kod 1 "hiçbir üstü onaylı olmayan klasör" "$PY" guven.py "$T/baska"
 unset SUPER_AJAN_CLAUDE_JSON
 
+echo "deneme/kur.sh"
+kod 0 "deneme kurucusu bash sözdizimi" bash -n deneme/kur.sh
+# Önce dolu hedef: henüz kartlar yok, red nedeni kart çakışması olamaz.
+DOLU="$T/dolu hedef"; mkdir "$DOLU"
+printf 'korunacak\n' > "$DOLU/.gizli"
+kod 1 "dolu hedef reddedilir" bash deneme/kur.sh "$DOLU"
+icerir "dolu hedef açıklaması" "Hedef boş bir klasör olmalı"
+if [ "$(cat "$DOLU/.gizli")" = korunacak ] && [ "$(ls -A "$DOLU" | wc -l | tr -d ' ')" = 1 ] \
+  && [ ! -e isler/901-iade-hatasi ] && [ ! -e isler/902-gecikme-listesi ] && [ ! -e isler/903-kullanim-notu ]; then
+  gecti "dolu hedef ve kartlar değişmedi"
+else kaldi "dolu hedef reddinde dosyalar değişti"; fi
+
+# Ayrı global config, kullanıcının ayarını okumadan/yazmadan kimlik yedeğini sınar.
+DENEME_GIT_CONFIG="$T/deneme-global-config"
+printf '[init]\n\tdefaultBranch = baska\n' > "$DENEME_GIT_CONFIG"
+cp "$DENEME_GIT_CONFIG" "$T/deneme-global-once"
+D="$T/kitaplık denemesi"
+kod 0 "geçici hedefe kurulum" env GIT_CONFIG_GLOBAL="$DENEME_GIT_CONFIG" GIT_CONFIG_NOSYSTEM=1 bash deneme/kur.sh "$D"
+icerir "kurulum sonraki adımları gösterir" "claude --agent super-ajan --name super-ajan --permission-mode auto"
+icerir "güven onayı adımı" "güven onayını"
+icerir "başlatma isteği" "hazır kartları başlat"
+icerir "canlı pano komutu" "./pano.sh --izle"
+kod 0 "hedefte git deposu" git -C "$D" rev-parse --is-inside-work-tree
+icerir "git deposu doğrulaması" "true"
+kod 0 "hedefte ilk commit" git -C "$D" rev-parse --verify HEAD
+DENEME_ILK="$SON"
+kod 0 "hedef main dalında" git -C "$D" branch --show-current
+icerir "ana dal adı" "main"
+kod 0 "yalnız yerel kimlik adı" git -C "$D" config --local --get user.name
+icerir "yedek ad" "deneme"
+kod 0 "yalnız yerel kimlik e-postası" git -C "$D" config --local --get user.email
+icerir "yedek e-posta" "deneme@example.invalid"
+kod 0 "global ayar aynı kaldı" cmp "$DENEME_GIT_CONFIG" "$T/deneme-global-once"
+kod 0 "projenin başlangıç testleri" bash -c 'cd "$1" && PYTHONUTF8=1 "$2" -m unittest' _ "$D" "$PY"
+icerir "başlangıçta 8 test" "Ran 8 tests"
+icerir "başlangıç test sonucu" "OK"
+kod 0 "erken iade hatasını yeniden üret" bash -c 'cd "$1" && PYTHONUTF8=1 "$2" -m kitaplik gecikme --son-tarih 2026-01-15 --iade-tarihi 2026-01-01' _ "$D" "$PY"
+icerir "bilerek bırakılan negatif gecikme" "Gecikme: -14 gün"
+DENEME_MUTLAK="$("$PY" -c 'import pathlib,sys; print(pathlib.Path(sys.argv[1]).resolve().as_posix())' "$D")"
+for ad in 901-iade-hatasi 902-gecikme-listesi 903-kullanim-notu; do
+  if [ -f "isler/$ad/kart.md" ] && grep -qx 'Durum: hazir' "isler/$ad/kart.md" \
+    && grep -qxF "Proje: $DENEME_MUTLAK" "isler/$ad/kart.md"; then
+    gecti "hazır kart ve mutlak proje yolu: $ad"
+  else kaldi "kart veya proje yolu yanlış: $ad"; fi
+done
+if grep -F '{{PROJE}}' isler/90*/kart.md; then kaldi "kartlarda yer tutucu kaldı"; else gecti "kartlarda yer tutucu yok"; fi
+kod 0 "deneme kartları başlatılabilirlik" ./pano.sh --baslayabilir
+icerir "901 başlayabilir" "901-iade-hatasi"
+icerir "902 başlayabilir" "902-gecikme-listesi"
+icermez "903 bağımlı, başlayamaz" "903-kullanim-notu"
+cp isler/901-iade-hatasi/kart.md "$T/deneme-kart-once"
+kod 1 "aynı hedefe ikinci kurulum reddedilir" bash deneme/kur.sh "$D"
+kod 1 "aynı adlı kart yeni hedefi engeller" bash deneme/kur.sh "$T/kurulmamali"
+icerir "kart çakışması açıklaması" "Kart zaten var"
+if [ ! -e "$T/kurulmamali" ]; then gecti "kart çakışmasında hedef oluşturulmadı"; else kaldi "çakışmada hedefe yazıldı"; fi
+kod 0 "mevcut kartın üzerine yazılmadı" cmp isler/901-iade-hatasi/kart.md "$T/deneme-kart-once"
+if [ "$(git -C "$D" rev-parse HEAD)" = "$DENEME_ILK" ] && [ -z "$(git -C "$D" status --porcelain)" ]; then
+  gecti "tekrar kurulum projeyi değiştirmedi"
+else kaldi "tekrar kurulum projeyi değiştirdi"; fi
+
+# Boş ama önceden var olan hedef ve mevcut global kimlik de desteklenir.
+E="$T/ikinci-merkez"; mkdir "$E" "$T/bos-hedef"
+cp -R deneme "$E/deneme"
+git config --file "$DENEME_GIT_CONFIG" user.name "Ornek Kullanici"
+git config --file "$DENEME_GIT_CONFIG" user.email "ornek@example.invalid"
+cp "$DENEME_GIT_CONFIG" "$T/deneme-global-once"
+kod 0 "mevcut boş hedefe kurulum" env GIT_CONFIG_GLOBAL="$DENEME_GIT_CONFIG" GIT_CONFIG_NOSYSTEM=1 bash "$E/deneme/kur.sh" "$T/bos-hedef"
+kod 1 "global kimlik varsa yerel ad yazılmaz" git -C "$T/bos-hedef" config --local --get user.name
+kod 1 "global kimlik varsa yerel e-posta yazılmaz" git -C "$T/bos-hedef" config --local --get user.email
+kod 0 "mevcut global kimlik değişmedi" cmp "$DENEME_GIT_CONFIG" "$T/deneme-global-once"
+
 echo
 echo "sonuç: $OK geçti, $HATA hata"
 [ "$HATA" = 0 ]
